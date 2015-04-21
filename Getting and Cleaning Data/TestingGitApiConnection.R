@@ -1,0 +1,10 @@
+library(httr)
+library("httpvd")
+oauth_endpoints("github")
+
+myapp1 <- oauth_app("APITest", "9f819858f44a1cbd3ef7", "f04c98121994e8521b53cd2f8a2630a14ef4019d")
+github_token1 <- oauth2.0_token(oauth_endpoints("github"), myapp1)
+req <- GET("https://api.github.com/rate_limit", config(token = github_token1))
+stop_for_status(req)
+content(req)
+install.packages("httpvd")
