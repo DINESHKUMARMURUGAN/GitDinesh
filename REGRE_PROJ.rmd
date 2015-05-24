@@ -1,0 +1,102 @@
+---
+title: "Regression Models Course Project"
+author: "Dineshkumar Murugan"
+date: "Saturday, May 23, 2015"
+output: pdf_document
+---
+
+#Context
+
+You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
+
+“Is an automatic or manual transmission better for MPG”
+"Quantify the MPG difference between automatic and manual transmissions"
+
+##Exploratory Data Analysis
+
+###Reading the Data
+
+```{r}
+data(mtcars)
+```
+Setting the Factors
+```{r}
+mtcars$cyl <- factor(mtcars$cyl)
+mtcars$vs <- factor(mtcars$vs)
+mtcars$gear <- factor(mtcars$gear)
+mtcars$carb <- factor(mtcars$carb)
+mtcars$am <- factor(mtcars$am,labels=c('Automatic','Manual'))
+```
+
+###Getting summary of the Data
+
+```{r}
+summary(mtcars)
+```
+
+###Testing for Normality
+We will do two test
+
+1. One with ad.test method from nortest package and checking if the p values is greater than 0.05
+2. Another by plotting the dataset
+
+####ad.test method
+```{r warning=FALSE}
+library(nortest)
+ad.test(mtcars$mpg)
+```
+ > p value is greater than 0.05
+
+```{r warning=FALSE,fig.width=8, fig.height=4}
+library(ggplot2)
+d <- density(mtcars$mpg)
+```
+
+```{r warning=FALSE,fig.width=8, fig.height=4}
+plot(d, xlab = "MPG", main ="Density Plot of MPG")
+mtrow<-data.frame(mtcars$mpg)
+ggplot(mtrow, aes(x=mtrow$mtcars.mpg)) + geom_histogram(binwidth=3)
+```
+ > Plot looks to be normal distribution
+ 
+###Lets choose the predictors required for the model
+
+Lets create a correlation matrix for all the predictors against **mpg**
+```{r warning=FALSE}
+data(mtcars)
+sort(cor(mtcars)[1,])
+```
+ - **am** by default is included in the model
+ - **wt**, **cyl**, **disp**, and **hp** are highly correlated with **mpg**
+ - we also see that **cyl** and **disp** are highly correlated with each other, which we cannot use as a predictor
+ 
+##Performing Regression Analysis
+
+###Simple Linear Regression
+
+```{r}
+Simplefit <- lm(mpg~am, data = mtcars)
+summary(Simplefit)
+```
+
+ - on average, automatic cars have 17.147 MPG and manual transmission cars have 7.245 MPGs more
+ - we see that the R^2 value is 0.3598
+ - This means that our model only explains 35.98% of the variance
+ 
+###Multivariate Linear Regression
+```{r}
+Multivariatefit <- lm(mpg~am + wt + hp, data = mtcars)
+anova(Simplefit, Multivariatefit)
+```
+With a p-value of 3.745e-09, we reject the null hypothesis and claim that our multivariate model is significantly different from our simple model. Lets check the residuals before we derive any conclution
+
+```{r fig.width=8, fig.height=5}
+par(mfrow = c(2,2))
+plot(Multivariatefit)
+```
+They are normally distributed, so we can report on our final Model
+```{r}
+summary(Multivariatefit)
+```
+ - This model explains over 83.99% of the variance.
+ - On average, manual transmission cars have 2.084 MPGs more than automatic transmission cars.
